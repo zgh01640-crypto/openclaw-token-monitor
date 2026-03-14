@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>OpenClaw Token Monitor</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<h2>OpenClaw Token 使用监控</h2>
+
+<p>今日总量: <span id="total">0</span></p>
+<p>实时速率: <span id="rate">0</span> tokens/min</p>
+
+<canvas id="modelChart" width="400" height="400"></canvas>
+
+<script>
+const ctx = document.getElementById('modelChart').getContext('2d');
+
+const chart = new Chart(ctx, {
+  type: 'pie',
+  data: {
+    labels: [],
+    datasets: [{ data: [] }]
+  }
+});
+
+async function update() {
+  const res = await fetch("http://localhost:5000/stats");
+  const data = await res.json();
+
+  document.getElementById("total").textContent = data.today_total;
+  document.getElementById("rate").textContent = data.rate_per_min;
+
+  chart.data.labels = Object.keys(data.by_model);
+  chart.data.datasets[0].data = Object.values(data.by_model);
+  chart.update();
+}
+
+setInterval(update, 2000);
+update();
+</script>
+
+</body>
+</html>
